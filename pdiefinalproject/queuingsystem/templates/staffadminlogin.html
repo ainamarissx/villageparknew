@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff/Admin Login - Virtual Queue</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #06402B; /* Dark green background */
+            margin: 0;
+            padding: 0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full height for centering */
+        }
+
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            padding: 30px;
+            background: white; /* White background for the login box */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+            color: #06402B; /* Dark green for title */
+            font-size: 28px;
+        }
+
+        .login-container img {
+            width: 100px;  /* Adjust width as needed */
+            height: auto;  /* Maintain aspect ratio */
+            margin-bottom: 20px;  /* Space below logo */
+            border-radius: 50%;
+        }
+
+        .login-container label {
+            display: block;
+            text-align: left;
+            margin: 10px 0 5px; /* Space around labels */
+            font-weight: bold;
+            color: #06402B;
+        }
+
+        .login-container input, .login-container select, .login-container button {
+            width: 95%;
+            padding: 12px;
+            margin: 10px 0; /* Space between inputs and button */
+            border: 1px solid #333;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-container input:focus, .login-container select:focus {
+            border-color: #5ebb4e; /* Green border on focus */
+            outline: none;
+        }
+
+        .login-container button {
+            background-color: #5ebb4e; /* Light green button */
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-container button:hover {
+            background-color: #06402B; /* Darker green on hover */
+        }
+
+        .role-indicator {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #5ebb4e; /* Light green for role indicator */
+        }
+
+        /* Error message styling */
+        .error-message {
+            color: #e74c3c; /* Red color for error messages */
+            margin-top: 10px;
+            font-size: 20px;
+        }
+
+        /* Confirmation message styling */
+        .confirmation-message {
+            color: #5ebb4e; /* Light green for confirmation */
+            margin-top: 10px;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <!-- Container for the Login Form -->
+    <div class="login-container">
+        <!-- Display a logo for visual appeal -->
+        <img src="{% static 'logo1.png' %}" alt="Virtual Queue Logo">
+
+        <!-- Role indicator for differentiation -->
+        <p class="role-indicator">Select your role to login</p>
+
+        <!-- Login form -->
+        <form id="loginForm" action="{% url 'staffadminlogin' %}" method="POST">
+            {% csrf_token %}
+            <h1>Staff/Admin Login</h1>
+            
+<!-- Display any error messages -->
+{% if error %}
+    <div>
+        {% for message in error %}
+            <p class="error-message">{{ message }}</p> <!-- Display each error message -->
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
+                <option value="" disabled selected>Select Role</option>
+                <option value="Staff">Staff</option>
+                <option value="Admin">Admin</option>
+            </select>
+            
+            <label for="user_id">ID:</label>
+            <input type="text" id="user_id" name="user_id" placeholder="Enter Staff/Admin ID" required>
+            
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+            
+            <button type="submit">Login</button>
+            <p class="confirmation-message" id="confirmationMessage">Logging in, please wait...</p> 
+        </form>
+    </div>
+
+    <script>
+        // Ensure that a role is selected before submission
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            const role = document.getElementById('role').value;
+            const userId = document.getElementById('user_id').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMessage = document.querySelector('.error-message');
+            const confirmationMessage = document.getElementById('confirmationMessage');
+
+            // Reset error message
+            errorMessage.style.display = 'none';
+            confirmationMessage.style.display = 'none'; // Reset confirmation message
+
+            // Check if role is selected and inputs are not empty
+            if (!role || !userId || !password) {
+                errorMessage.style.display = 'block'; // Show error message
+                event.preventDefault();  // Prevent form submission if validation fails
+            } else {
+                // Show confirmation message before redirecting
+                confirmationMessage.style.display = 'block';
+                event.preventDefault(); // Prevent form submission to delay
+                // Redirect after a few seconds
+                setTimeout(() => {
+                    this.submit(); // Submit the form after the delay
+                }, 2000); // Delay for 2 seconds
+            }
+        });
+    </script>
+</body>
+</html>

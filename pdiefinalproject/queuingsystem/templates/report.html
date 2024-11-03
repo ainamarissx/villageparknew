@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Selection</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #06402B;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 100px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            color: #06402B;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #06402B;
+        }
+        .back-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 18px;
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            color: #06402B;
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
+        }
+        .report-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 3px solid #333;
+            padding: 20px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+
+<script>
+    function printReport(reportId) {
+        const reportToPrint = document.getElementById(reportId).innerHTML;
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
+        printWindow.document.write('<html><head><title>Print Report</title>');
+        printWindow.document.write('<style>');
+        printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
+        printWindow.document.write('h1 { color: #06402B; }');
+        printWindow.document.write('table { width: 100%; border-collapse: collapse; }');
+        printWindow.document.write('th, td { border: 1px solid #333; padding: 10px; text-align: left; }');
+        printWindow.document.write('th { background-color: #06402B; color: white; }');
+        printWindow.document.write('tr:nth-child(even) { background-color: #f2f2f2; }');
+        printWindow.document.write('</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(reportToPrint);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+</script>
+
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'admindashboard' %}" class="back-link">Back to Dashboard</a>
+        <h1>Select a Report</h1>
+
+        <a href="#" class="button" onclick="printReport('orderReport')"><i class="fas fa-file-alt"></i> Order Report</a>
+        <a href="#" class="button" onclick="printReport('paymentReport')"><i class="fas fa-file-invoice-dollar"></i> Payment Report</a>
+    </div>
+
+    <div id="orderReport" class="hidden report-section">
+        <h1>Order Report</h1>
+        <p><strong>Report Date:</strong> {{ report_date }}</p>
+        <p><strong>Total Orders:</strong> {{ total_orders }}</p>
+        <p><strong>Total Amount:</strong> RM {{ total_sales }}</p>
+        
+        <h2>Order Details:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Phone Number</th>
+                    <th>Total Price (RM)</th>
+                    <th>Payment Method</th>
+                    <th>Order Date</th>
+                    <th>Menu Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order, items in ordered_items %}
+                    <tr>
+                        <td>{{ order.order_id }}</td>
+                        <td>{{ order.customer.full_name }}</td>
+                        <td>{{ order.customer.phone_number }}</td>
+                        <td>RM {{ order.total_price }}</td>
+                        <td>{{ order.payment_method }}</td>
+                        <td>{{ order.date_ordered|date:"Y-m-d H:i:s" }}</td>
+                        <td>
+                            {% for item in items %}
+                                {{ item.menu_name }} (RM {{ item.menu_price }} x {{ item.quantity }} = RM {{ item.total_item_price }})<br>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+
+    <div id="paymentReport" class="hidden report-section">
+        <h1>Payment Report</h1>
+        <p><strong>Report Date:</strong> {{ report_date }}</p>
+        <p><strong>Total Payments:</strong> RM {{ total_paid_sales }}</p>
+        
+        <h2>Payment Details:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Phone Number</th>
+                    <th>Amount Paid (RM)</th>
+                    <th>Payment Method</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in paid_orders %}
+                    <tr>
+                        <td>{{ order.order_id }}</td>
+                        <td>{{ order.customer.full_name }}</td>
+                        <td>{{ order.customer.phone_number }}</td>
+                        <td>RM {{ order.total_price }}</td>
+                        <td>{{ order.payment_method }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

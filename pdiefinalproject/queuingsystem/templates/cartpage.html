@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #06402B;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #06402B;
+            margin-bottom: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Add a wrapper for the table to enable horizontal scrolling */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #06402B;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        button {
+            background-color: lightgrey;
+            color: black;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            margin: 0 2px;
+        }
+
+        button:hover {
+            background-color: lightgreen;
+        }
+
+        a {
+            text-decoration: none;
+            color: #06402B;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .pay-button {
+            display: block;
+            width: 150px;
+            margin: 20px auto;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .pay-button:hover {
+            background-color: #06402B;
+            text-decoration: none;
+        }
+
+        .quantity-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .quantity {
+            width: 40px;
+            text-align: center;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Your Cart</h1>
+            <a href="{% url 'menupagecust' %}">Back to Menu</a>
+        </div>
+        <p class="welcome-message" style="text-align:center; font-size: 18px;">Welcome, {{ request.session.customer_name }}!</p>
+        
+        {% if order_items %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item_detail in order_items %}
+                    <tr>
+                        <td>{{ item_detail.item.menu_name }}</td>
+                        <td class="quantity-buttons">
+                            <form action="{% url 'decrease_quantity' item_detail.item.menu_id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" aria-label="Decrease quantity">-</button>
+                            </form>
+                            <input type="text" value="{{ item_detail.quantity }}" class="quantity" readonly />
+                            <form action="{% url 'increase_quantity' item_detail.item.menu_id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" aria-label="Increase quantity">+</button>
+                            </form>
+                        </td>
+                        <td>RM {{ item_detail.item.menu_price|floatformat:2 }}</td>
+                        <td>RM {{ item_detail.total_price|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <h2 style="text-align:center;">Total Price: RM {{ total_price|floatformat:2 }}</h2>
+        <a href="{% url 'payment' %}" class="pay-button">Pay</a>
+        {% else %}
+        <p>Your cart is empty.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

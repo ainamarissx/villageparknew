@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #06402B;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #06402B;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #5ebb4e;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .back-link:hover {
+            color: #06402B;
+            text-decoration: underline;
+        }
+
+        .add-user-btn {
+            padding: 10px 20px;
+            background-color: #5ebb4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .change-admin-btn {
+            padding: 10px 20px;
+            background-color: #5ebb4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .change-admin-btn:hover {
+            background-color: #06402B;
+        }
+
+        .add-user-btn:hover {
+            background-color: #06402B;
+        }
+
+        .add-user-section {
+            text-align: left;
+            display: flex;
+            gap: 10px; /* Adjusts space between buttons */
+        }
+
+
+        /* Modal and form styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input[type="file"] {
+            border: none;
+        }
+
+        .submit-btn {
+            background-color: #5ebb4e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #06402B;
+        }
+
+        /* User list styling */
+        .user-list {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .user-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .details p {
+            margin-bottom: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            padding: 8px 16px;
+            background-color: #5ebb4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .edit-btn:hover,
+        .delete-btn:hover {
+            background-color: #06402B;
+        }
+
+        /* Search bar styles */
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .message-area {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        {% if messages %}
+            <div class="message-area">
+                {% for message in messages %}
+                    {% if forloop.last %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        <header class="header">
+            <h1>User Management</h1>
+            <a href="{% url 'admindashboard' %}" class="back-link">Back to Dashboard</a>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search users...">
+        </div>
+
+        <section class="add-user-section" style="display: flex; gap: 10px;">
+            <button class="add-user-btn" id="openModalBtn">Add Staff</button>
+            <button class="change-admin-btn" id="changeAdminBtn">Add Admin</button>
+        </section>
+        <!-- Modal for Change Admin -->
+        <div id="changeAdminModal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="closeChangeAdminModal">&times;</span>
+                <h2 class="modal-header">Change Admin</h2>
+                <h4>Verify old admin details and enter new admin information</h4>
+
+                <form id="changeAdminForm" method="POST" action="{% url 'change_admin' %}">
+                    {% csrf_token %}
+
+                    <!-- Old Admin Details -->
+
+                    <!-- Old Admin ID -->
+                    <div class="form-group">
+                        <label for="old_admin_id">Old Admin ID:</label>
+                        <input type="text" id="old_admin_id" name="old_admin_id" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="old_admin_name">Old Admin Name:</label>
+                        <input type="text" id="old_admin_name" name="old_admin_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="old_admin_phone">Old Admin Phone Number:</label>
+                        <input type="text" id="old_admin_phone" name="old_admin_phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="old_admin_email">Old Admin Email:</label>
+                        <input type="email" id="old_admin_email" name="old_admin_email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="old_admin_password">Old Admin Password:</label>
+                        <input type="password" id="old_admin_password" name="old_admin_password" required>
+                    </div>
+
+                    <!-- New Admin Details -->
+
+                    <div class="form-group">
+                        <label for="new_admin_id">New Admin ID:</label>
+                        <input type="text" id="new_admin_id" name="new_admin_id" required>
+                    </div>
+        
+        
+                    <div class="form-group">
+                        <label for="new_admin_name">New Admin Name:</label>
+                        <input type="text" id="new_admin_name" name="new_admin_name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_admin_phone">New Admin Phone Number:</label>
+                        <input type="text" id="new_admin_phone" name="new_admin_phone" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_admin_email">New Admin Email:</label>
+                        <input type="email" id="new_admin_email" name="new_admin_email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new_admin_password">New Admin Password:</label>
+                        <input type="password" id="new_admin_password" name="new_admin_password" required>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Update Admin</button>
+                </form>
+            </div>
+        </div>
+
+        <section class="user-list">
+            <h2>USER LIST</h2>
+            {% for staff in staff_members %}
+            <div class="user-card" data-id="{{ staff.id }}" data-name="{{ staff.staff_name }}" data-email="{{ staff.staff_email }}" data-phone="{{ staff.staff_phone_number }}">
+                <div class="user-info">
+                    <img src="{{ staff.staff_image.url }}" alt="User Avatar" class="avatar">
+                    <div class="details">
+                        <p><strong>Staff ID:</strong> {{ staff.id }}</p>
+                        <p><strong>Full Name:</strong> {{ staff.staff_name }}</p>
+                        <p><strong>Phone Number:</strong> {{ staff.staff_phone_number }}</p>
+                        <p><strong>Email:</strong> {{ staff.staff_email }}</p>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="edit-btn" data-id="{{ staff.id }}">Edit</button>
+                    <button class="delete-btn" data-id="{{ staff.id }}">Delete</button>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+    </div>
+
+    <script>
+        const changeAdminBtn = document.getElementById("changeAdminBtn");
+        const changeAdminModal = document.getElementById("changeAdminModal");
+        const closeChangeAdminModal = document.getElementById("closeChangeAdminModal");
+
+        changeAdminBtn.onclick = () => changeAdminModal.style.display = "block";
+        closeChangeAdminModal.onclick = () => changeAdminModal.style.display = "none";
+        window.onclick = (event) => {
+            if (event.target === changeAdminModal) changeAdminModal.style.display = "none";
+        };
+    </script>
+</body>
+
+</html>

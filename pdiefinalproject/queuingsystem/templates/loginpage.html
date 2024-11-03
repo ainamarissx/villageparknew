@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Virtual Queue</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #06402B; /* Dark green background */
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white; /* White background for the container */
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #06402B; /* Dark green color for the title */
+        }
+        label {
+            display: block; /* Make label a block element */
+            text-align: left; /* Align label text to the left */
+            margin-bottom: 5px; /* Space below the label */
+            font-weight: bold; /* Make the label text bold */
+        }
+        input, select, button {
+            width: 95%; /* Adjust width as needed */
+            padding: 10px;
+            margin: 10px 0; /* Margin between inputs */
+            border: 1px solid; /* Border color */
+            border-radius: 5px;
+            font-size: 16px;
+            background: #f9f9f9; /* Light gray background for input fields */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+            transition: border-color 0.3s; /* Smooth transition for border color */
+        }
+        input.valid {
+            border-color: #333; /* Green border for valid input */
+        }
+        input.invalid {
+            border-color: #e74c3c; /* Red border for invalid input */
+        }
+        button {
+            background-color: #5ebb4e; /* Light green button */
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s; /* Smooth transition for button color */
+        }
+        button:hover {
+            background-color: #06402B; /* Darker green on hover */
+        }
+        img {
+            width: 130px;  /* Adjust width as needed */
+            height: auto;  /* Maintain aspect ratio */
+            margin-bottom: 20px;  /* Add margin below the image */
+            border-radius: 50%;
+        }
+        .link-container {
+            margin-top: 20px; /* Space above the links */
+        }
+        .link-container a {
+            margin: 0 15px; /* Space between links */
+            color: #5ebb4e; /* Link color */
+            text-decoration: none; /* Remove underline */
+            font-weight: bold; /* Make the text bold */
+        }
+        .link-container a:hover {
+            text-decoration: underline; /* Underline on hover */
+            color: #06402B; /* Darker green on hover */
+        }
+        .confirmation {
+            color: #5ebb4e; /* Green color for confirmation */
+            margin-top: 20px; /* Space above confirmation message */
+            display: none; /* Initially hidden */
+        }
+        .error-message {
+            color: #e74c3c; /* Red color for error message */
+            margin-top: 10px; /* Space above error message */
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{% static 'logo1.png' %}" alt="Village Park Logo"> 
+        <h1>Village Park Virtual Queue</h1>
+        <form id="loginForm" action="{% url 'loginpage' %}" method="POST">
+            {% csrf_token %}
+            <label for="full_name">Full Name:</label>
+            <input type="text" id="full_name" name="full_name" placeholder="Beyonce" required>
+
+            <label for="phone_number">Phone Number:</label>
+            <input type="tel" id="phone_number" name="phone_number" placeholder="012345678" required pattern="[0-9]{10,15}">
+            
+            <label for="number_of_pax">Number of Pax:</label>
+            <input type="number" id="number_of_pax" name="number_of_pax" placeholder="Enter number of pax" required>
+            
+            <p class="error-message" id="errorMessage">If more than 10 pax, please contact +0392838.</p>
+            
+            <button type="submit">Submit</button>
+            <p class="confirmation" id="confirmationMessage">Form submitted successfully!</p>
+        </form>
+        
+        <!-- Horizontal Links for Staff and Admin -->
+        <div class="link-container">
+            <a href="{% url 'staffadminlogin' %}">Staff</a>
+            <a href="{% url 'staffadminlogin' %}">Admin</a>
+        </div>
+    </div>
+
+    <script>
+        // Add event listener to the form
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting immediately
+            
+            // Validate inputs
+            let valid = true;
+            const fullName = document.getElementById('full_name');
+            const phoneNumber = document.getElementById('phone_number');
+            const numberOfPax = document.getElementById('number_of_pax');
+            const errorMessage = document.getElementById('errorMessage');
+    
+            // Reset previous validation styles
+            fullName.classList.remove('valid', 'invalid');
+            phoneNumber.classList.remove('valid', 'invalid');
+            numberOfPax.classList.remove('valid', 'invalid');
+            errorMessage.style.display = 'none'; // Hide the error message initially
+    
+            // Check Full Name
+            if (fullName.value.trim() === '') {
+                fullName.classList.add('invalid');
+                valid = false;
+            } else {
+                fullName.classList.add('valid');
+            }
+    
+            // Check Phone Number
+            const phonePattern = /^[0-9]{10,15}$/; // Adjust pattern as needed
+            if (!phonePattern.test(phoneNumber.value)) {
+                phoneNumber.classList.add('invalid');
+                valid = false;
+            } else {
+                phoneNumber.classList.add('valid');
+            }
+    
+            // Check Number of Pax
+            if (numberOfPax.value < 1) {
+                numberOfPax.classList.add('invalid');
+                valid = false;
+            } else if (numberOfPax.value > 10) {
+                errorMessage.style.display = 'block'; // Show error message
+                errorMessage.textContent = "If more than 10 pax, please contact +0392838."; // Set error message text
+                numberOfPax.classList.add('invalid');
+                valid = false; // Mark form as invalid
+            } else {
+                numberOfPax.classList.add('valid');
+            }
+    
+            // If all fields are valid, show confirmation message
+            if (valid) {
+                document.getElementById('confirmationMessage').style.display = 'block';
+                
+                // Simulate form submission (for demonstration purposes)
+                setTimeout(() => {
+                    this.submit(); // Submit the form after a delay
+                }, 1000); // Delay for 1 second before submitting
+            }
+        });
+    </script>
+    
+</body>
+</html>

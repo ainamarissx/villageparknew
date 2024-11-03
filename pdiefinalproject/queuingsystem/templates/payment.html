@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #06402B;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .back-to-cart {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #4CAF50;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .back-to-cart:hover {
+            color: #06402B;
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: #06402B;
+            text-align: center;
+        }
+
+        .payment-info {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #eaf7ea;
+        }
+
+        .dropdown-section {
+            margin: 20px 0;
+        }
+
+        .dropdown-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .dropdown-section select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .upload-section {
+            margin: 20px 0;
+        }
+
+        .upload-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .upload-section input[type="file"] {
+            display: block;
+            margin: 10px 0;
+            padding: 5px;
+        }
+
+        .action-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 20px 10px;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: #06402B;
+        }
+
+        .account-info {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #eaf7ea;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-code img {
+            max-width: 50%; /* Responsive image */
+            height: auto;
+        }
+    </style>
+</head>
+
+<body>
+    {% load static %}
+    <div class="container">
+        <a href="{% url 'cartpage' %}" class="back-to-cart">Back to Cart</a>
+    
+        <h1>Payment</h1>
+    
+        <!-- Display the total amount -->
+        <div class="payment-info">
+            <h2>Order Summary</h2>
+            <p>Total Amount: RM {{ total_price }}</p>
+        </div>
+
+        <!-- Account Number Information -->
+        <div class="account-info">
+            <h2>Account Information</h2>
+            <p><strong>Account Number:</strong> 123456789</p>
+            <p><strong>Account Name:</strong> Village Park Restaurant</p>
+            <p><strong>Bank:</strong> Maybank Sdn Bhd</p>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="qr-code">
+            <h2>QR Code</h2>
+            <img src="{% static 'qrcode.jpg' %}" alt="QR Code for Payment">
+        </div>
+    
+        <form id="paymentForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+    
+            <div class="payment-info">
+                <h2>Payment Method</h2>
+                <p>Please select your payment method from the dropdown below:</p>
+            </div>
+    
+            <div class="dropdown-section">
+                <label for="payment-method">Choose Payment Method:</label>
+                <select id="payment-method" name="payment_method" required>
+                    <option value="Account Transfer">Account Transfer</option>
+                    <option value="QR Code">QR Code</option>
+                </select>
+            </div>
+    
+            <div class="upload-section">
+                <label for="receiptUpload">Upload Payment Receipt:</label>
+                <input type="file" id="receiptUpload" name="receipt" accept="image/*" required>
+            </div>
+    
+            <button type="submit" class="action-button">Upload Receipt</button>
+        </form>
+    </div>
+    
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const paymentButton = document.querySelector('.action-button[type="submit"]');
+            paymentButton.disabled = true; // Disable button to prevent multiple submissions
+            paymentButton.textContent = 'Processing...'; // Change button text
+
+            const formData = new FormData(this);
+
+            fetch("{% url 'payment' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                paymentButton.disabled = false; // Re-enable button after response
+                paymentButton.textContent = 'Upload Receipt'; // Reset button text
+
+                if (data.success) {
+                    alert('Payment submitted successfully!');
+                    window.location.href = "{% url 'submittedorder' %}";  // Redirect to payment page after success
+                } else {
+                    alert('Error submitting payment: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                paymentButton.disabled = false; // Re-enable button on error
+                paymentButton.textContent = 'Upload Receipt'; // Reset button text
+            });
+        });
+    </script>
+
+</body>
+
+</html>

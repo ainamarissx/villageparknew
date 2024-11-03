@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Management</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #06402B;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to the top */
+            height: 100vh;
+            padding: 20px; /* Add padding to the body */
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px; /* Space at the bottom */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #06402B; /* Dark green color for the title */
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #5ebb4e; /* Green color for the link */
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .back-link:hover {
+            color: #06402B; /* Darker green on hover */
+            text-decoration: underline; /* Underline on hover */
+        }
+
+        .add-menu-btn {
+            padding: 10px 20px;
+            background-color: #5ebb4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .add-menu-btn:hover {
+            background-color: #06402B;
+        }
+
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80%; /* Set a maximum height */
+            overflow-y: auto; /* Enable vertical scrolling */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input[type="file"] {
+            border: none;
+        }
+
+        .submit-btn {
+            background-color: #5ebb4e;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #06402B;
+        }
+
+        .menu-list {
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .menu-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .menu-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .menu-info img {
+            width: 60px;
+            height: 60px;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+
+        .edit-btn,
+        .delete-btn {
+            padding: 10px;
+            background-color: #5ebb4e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .edit-btn:hover,
+        .delete-btn:hover {
+            background-color: #06402B;
+        }
+
+        .availability {
+            font-weight: bold;
+            color: #5ebb4e; /* Green color for availability */
+        }
+
+        .existing-image {
+            margin-top: 10px;
+        }
+        .unavailable {
+            color: red;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Menu Management</h1>
+            <a href="{% url 'admindashboard' %}" class="back-link">Back to Dashboard</a>
+        </header>
+    
+        <!-- Search input field -->
+        <section class="search-section">
+            <input type="text" id="searchInput" placeholder="Search menu items..." style="width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;">
+        </section>
+    
+        <section class="add-menu-section">
+            <button class="add-menu-btn" id="openModalBtn">Add Menu Item</button>
+        </section>
+    
+        <section class="menu-list">
+            <h2>MENU LIST</h2>
+            {% for item in menu_items %}
+                <div class="menu-card" 
+                    data-name="{{ item.menu_name }}" 
+                    data-description="{{ item.menu_description }}" 
+                    data-price="{{ item.menu_price }}">
+                    <div class="menu-info">
+                        <img src="{{ item.menu_image.url }}" alt="{{ item.menu_name }}">
+                        <div class="details">
+                            <p><strong>Menu ID:</strong> {{ item.menu_id }}</p>
+                            <p><strong>Name:</strong> {{ item.menu_name }}</p>
+                            <p><strong>Description:</strong> {{ item.menu_description }}</p>
+                            <p><strong>Price:</strong> RM {{ item.menu_price }}</p>
+                            <p class="{% if item.menu_availability == 'Unavailable' %}unavailable{% else %}availability{% endif %}">
+                                <strong>Availability:</strong> {{ item.menu_availability }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="edit-btn" onclick="openEditModal('{{ item.menu_id }}', '{{ item.menu_name }}', '{{ item.menu_description }}', '{{ item.menu_price }}', '{{ item.menu_availability }}', '{{ item.menu_image.url }}')">Edit</button>
+                        <button class="delete-btn" onclick="confirmDelete('{{ item.menu_id }}')">Delete</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+    
+        
+
+    <!-- Modal for Add/Edit Menu Item -->
+    <div id="addMenuModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModalBtn">&times;</span>
+            <h2 class="modal-header">Add/Edit Menu Item</h2>
+            <form id="addMenuForm" method="POST" action="{% url 'menuadmin' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="menu_id">Menu ID:</label>
+                    <input type="text" id="menu_id" name="menu_id" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="menu_name">Menu Name:</label>
+                    <input type="text" id="menu_name" name="menu_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="menu_image">Menu Image:</label>
+                    <input type="file" id="menu_image" name="menu_image" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="menu_description">Menu Description:</label>
+                    <input type="text" id="menu_description" name="menu_description" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="menu_price">Menu Price (RM):</label>
+                    <input type="number" id="menu_price" name="menu_price" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="menu_availability">Availability:</label>
+                    <select id="menu_availability" name="menu_availability">
+                        <option value="Available">Available</option>
+                        <option value="Unavailable">Unavailable</option>
+                    </select>
+                </div>
+                <div id="currentImageContainer" class="existing-image"></div> <!-- Container for the existing image -->
+                <button type="submit" class="submit-btn">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Get modal and buttons
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modal = document.getElementById('addMenuModal');
+
+        // Open modal
+        openModalBtn.onclick = function () {
+            document.getElementById('addMenuForm').reset(); // Reset form for adding new item
+            document.getElementById('currentImageContainer').innerHTML = ''; // Clear current image
+            modal.style.display = 'block';
+        }
+
+        // Close modal
+        closeModalBtn.onclick = function () {
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function openEditModal(menuId, menuName, menuDescription, menuPrice, menuAvailability, menuImage) {
+            // Populate the modal fields with the existing data
+            document.getElementById('menu_id').value = menuId;
+            document.getElementById('menu_name').value = menuName;
+            document.getElementById('menu_description').value = menuDescription;
+            document.getElementById('menu_price').value = menuPrice;
+            document.getElementById('menu_availability').value = menuAvailability;
+            document.getElementById('currentImageContainer').innerHTML = `<p>Current Image:</p><img src="${menuImage}" alt="Current Menu Image" style="width: 100px; height: auto; border-radius: 5px;">`; // Show current image
+            modal.style.display = 'block'; // Show the modal
+        }
+
+        function deleteMenu(menuId) {
+            if (confirm('Are you sure you want to delete this menu item?')) {
+                // Here you would typically make an AJAX call or submit a form to delete the item
+                alert('Deleted menu item with ID: ' + menuId);
+                // Optionally, remove the item from the table without refreshing
+            }
+        }
+        function confirmDelete(menuId) {
+        if (confirm('Are you sure you want to delete this menu item?')) {
+            // Create a form to submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "delete_menu" "menuIdPlaceholder" %}'.replace('menuIdPlaceholder', menuId); // Replace the URL dynamically
+
+            // Add CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+
+            form.appendChild(csrfInput);
+            document.body.appendChild(form);
+            form.submit(); // Submit the form
+        }
+    }
+    const searchInput = document.getElementById('searchInput');
+    const menuCards = document.querySelectorAll('.menu-card');
+
+    // Event listener for search input
+    searchInput.addEventListener('input', function () {
+    const searchTerm = this.value.toLowerCase();
+
+    menuCards.forEach(card => {
+        const menuName = card.getAttribute('data-name').toLowerCase();
+        const menuDescription = card.getAttribute('data-description').toLowerCase();
+        const menuPrice = card.getAttribute('data-price').toLowerCase();
+
+        // Check if search term matches any menu attribute
+        if (menuName.includes(searchTerm) || menuDescription.includes(searchTerm) || menuPrice.includes(searchTerm)) {
+            card.style.display = 'flex';  // Show matching items
+        } else {
+            card.style.display = 'none';  // Hide non-matching items
+        }
+    });
+});
+
+    </script>
+</body>
+
+</html>
